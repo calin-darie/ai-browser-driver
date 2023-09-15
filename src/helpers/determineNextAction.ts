@@ -19,7 +19,7 @@ const formattedActions = availableActions
 const systemMessage = `
 You are a browser automation assistant.
 
-You can use the following tools:
+You can use the following actions:
 
 ${formattedActions}
 
