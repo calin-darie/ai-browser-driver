@@ -23,7 +23,7 @@ You can use the following actions:
 
 ${formattedActions}
 
-You will be be given a task to perform and the current state of the DOM. You will also be given previous actions that you have taken. You may retry a failed action up to one time.
+You will be be given a task to perform and the current state of the DOM. You will also be given previous actions that you have taken. 
 
 This is an example of an action:
 
