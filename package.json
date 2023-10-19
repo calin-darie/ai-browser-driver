@@ -1,6 +1,6 @@
 {
-  "name": "taxy-ai-browser-extension",
-  "version": "1.1.0",
+  "name": "gpt-browser-driver",
+  "version": "0.0",
   "description": "Web agent to do your bidding online",
   "license": "MIT",
   "repository": {
