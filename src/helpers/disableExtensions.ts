@@ -13,6 +13,7 @@ export const disableIncompatibleExtensions = async () => {
   const enabledBlacklistedExtensions = await new Promise<
     chrome.management.ExtensionInfo[]
   >((resolve, reject) => {
+
     chrome.management.getAll((extensions) => {
       if (chrome.runtime.lastError) {
         console.error(

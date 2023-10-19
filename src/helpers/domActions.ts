@@ -1,5 +1,6 @@
 import { TAXY_ELEMENT_SELECTOR } from '../constants';
 import { useAppState } from '../state/store';
+import { ActionPayload } from './availableActions';
 import { callRPC } from './pageRPC';
 import { scrollScriptString } from './runtimeFunctionStrings';
 import { sleep } from './utils';
@@ -118,7 +119,7 @@ async function setValue(payload: {
 
   await selectAllText(x, y);
   await typeText(payload.value);
-  // blur the element
+
   await blurFocusedElement();
 }
 
@@ -129,13 +130,11 @@ export const domActions = {
 
 export type DOMActions = typeof domActions;
 type ActionName = keyof DOMActions;
-type ActionPayload<T extends ActionName> = Parameters<DOMActions[T]>[0];
 
-// Call this function from the content script
-export const callDOMAction = async <T extends ActionName>(
-  type: T,
-  payload: ActionPayload<T>
+export const callDOMAction = async (
+  action: ActionPayload
 ): Promise<void> => {
+  console.error("calling dom action...", action.name, action.args);
   // @ts-expect-error - we know that the type is valid
-  await domActions[type](payload);
+  await domActions[action.name](action.args);
 };

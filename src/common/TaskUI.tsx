@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import { debugMode } from '../constants';
 import { useAppState } from '../state/store';
 import RunTaskButton from './RunTaskButton';
-import TaskHistory from './TaskHistory';
+import TaskLog from './TaskLog';
 import TaskStatus from './TaskStatus';
 
 const TaskUI = () => {
@@ -59,7 +59,7 @@ const TaskUI = () => {
         <Spacer />
         {debugMode && <TaskStatus />}
       </HStack>
-      <TaskHistory />
+      <TaskLog />
     </>
   );
 };

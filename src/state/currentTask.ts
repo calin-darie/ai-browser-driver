@@ -16,10 +16,11 @@ import { getSimplifiedDom } from '../helpers/simplifyDom';
 import { sleep, truthyFilter } from '../helpers/utils';
 import { MyStateCreator } from './store';
 
+
+
 export type TaskHistoryEntry = {
   prompt: string;
-  response: string;
-  action: ParsedResponse;
+  response: ParsedResponse;
   usage: CreateCompletionResponseUsage;
 };
 
@@ -27,6 +28,7 @@ export type CurrentTaskSlice = {
   tabId: number;
   instructions: string | null;
   history: TaskHistoryEntry[];
+  log: string;
   status: 'idle' | 'running' | 'success' | 'error' | 'interrupted';
   actionStatus:
     | 'idle'
@@ -48,6 +50,7 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
   tabId: -1,
   instructions: null,
   history: [],
+  log: "",
   status: 'idle',
   actionStatus: 'idle',
   actions: {
@@ -102,17 +105,17 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           setActionStatus('transforming-dom');
           const currentDom = templatize(html);
 
-          const previousActions = get()
-            .currentTask.history.map((entry) => entry.action)
+          const previousResponses = get()
+            .currentTask.history.map((entry) => entry.response)
             .filter(truthyFilter);
 
           setActionStatus('performing-query');
 
           const query = await determineNextAction(
             instructions,
-            previousActions.filter(
-              (pa) => !('error' in pa)
-            ) as ParsedResponseSuccess[],
+            previousResponses
+            .filter(pa => !('error' in pa))
+            .map(pa => pa as ParsedResponseSuccess),
             currentDom,
             3,
             onError
@@ -128,36 +131,42 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           if (wasStopped()) break;
 
           setActionStatus('performing-action');
-          const action = parseResponse(query.response);
+          const response = !!query.response? parseResponse(query.response): [{
+            thought: "no answer",
+            action: {
+              name: "fail",
+              args: {}
+            }
+          }] as ParsedResponseSuccess;
 
           set((state) => {
             state.currentTask.history.push({
               prompt: query.prompt,
-              response: query.response,
-              action,
+              response,
               usage: query.usage,
             });
+            state.currentTask.log += "\n Response: " + JSON.stringify(response)
+                                   + "\n Usage: " + JSON.stringify(query.usage)
+                                   + "\n ========================="
+                                   ;
           });
-          if ('error' in action) {
-            onError(action.error);
-            break;
-          }
-          if (
-            action === null ||
-            action.parsedAction.name === 'finish' ||
-            action.parsedAction.name === 'fail'
-          ) {
+          if ('error' in response) {
+            onError(response.error);
             break;
           }
 
-          if (action.parsedAction.name === 'click') {
-            await callDOMAction('click', action.parsedAction.args);
-          } else if (action.parsedAction.name === 'setValue') {
-            await callDOMAction(
-              action?.parsedAction.name,
-              action?.parsedAction.args
-            );
-          }
+          for (const element of response) {
+            if (
+              element.action.name === 'finish' ||
+              element.action.name === 'fail'
+            ) {
+              return;
+            }
+
+            console.error("call dom action by name...");
+            await callDOMAction(element.action);
+            console.error("dom action promise resolved.");
+          } 
 
           if (wasStopped()) break;
 
@@ -168,8 +177,8 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
           }
 
           setActionStatus('waiting');
-          // sleep 2 seconds. This is pretty arbitrary; we should figure out a better way to determine when the page has settled.
-          await sleep(2000);
+          // sleep 3 seconds. This is pretty arbitrary; we should figure out a better way to determine when the page has settled.
+          await sleep(3000);
         }
         set((state) => {
           state.currentTask.status = 'success';
