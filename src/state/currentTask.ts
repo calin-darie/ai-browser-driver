@@ -41,6 +41,7 @@ export type CurrentTaskSlice = {
   actions: {
     runTask: (onError: (error: string) => void) => Promise<void>;
     interrupt: () => void;
+    clearLog: () => void;
   };
 };
 export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
@@ -198,5 +199,10 @@ export const createCurrentTaskSlice: MyStateCreator<CurrentTaskSlice> = (
         state.currentTask.status = 'interrupted';
       });
     },
+    clearLog: () => {
+      set((state) =>  {
+        state.currentTask.log = '';
+      });
+    }
   },
 });

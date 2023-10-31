@@ -25,7 +25,7 @@ const ModelDropdown = () => {
         .
         <br />
         <br />
-        Taxy stores your API key locally and securely, and it is only used to
+        The Browser Driver extension stores your API key locally and securely, and it is only used to
         communicate with the OpenAI API.
       </Text>
       <HStack w="full">

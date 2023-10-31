@@ -1,13 +1,14 @@
 import { Button, HStack, Icon } from '@chakra-ui/react';
 import React from 'react';
 import { useAppState } from '../state/store';
-import { BsPlayFill, BsStopFill } from 'react-icons/bs';
+import { BsPlayFill, BsStopFill, BsTrashFill } from 'react-icons/bs';
 
 export default function RunTaskButton(props: { runTask: () => void }) {
   const state = useAppState((state) => ({
     taskState: state.currentTask.status,
     instructions: state.ui.instructions,
     interruptTask: state.currentTask.actions.interrupt,
+    clearLog: state.currentTask.actions.clearLog,
   }));
 
   let button = (
@@ -33,5 +34,20 @@ export default function RunTaskButton(props: { runTask: () => void }) {
     );
   }
 
-  return <HStack alignItems="center">{button}</HStack>;
+  return <HStack alignItems="center">
+    {button}
+    {
+      (state.taskState === 'error' || 
+      state.taskState === 'interrupted' ||
+      state.taskState === 'success'
+      ) &&
+        <Button
+          rightIcon={<Icon as={BsTrashFill} boxSize={6} />}
+          onClick={state.clearLog}
+          colorScheme="red"
+        >
+          Clear log
+        </Button>
+    }
+    </HStack>;
 }

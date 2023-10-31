@@ -33,8 +33,9 @@ export const useAppState = create<StoreType>()(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Stuff we want to persist
+        currentTask:   state.currentTask,
         ui: {
-          instructions: state.ui.instructions,
+          instructions: state.ui.instructions
         },
         settings: {
           openAIKey: state.settings.openAIKey,
@@ -43,6 +44,19 @@ export const useAppState = create<StoreType>()(
       }),
       merge: (persistedState, currentState) =>
         merge(currentState, persistedState),
+      onRehydrateStorage: (preHydrationState) => {
+        return async(hydratedState, error) => {
+          if (error) {
+            return;
+          }
+
+          if (hydratedState?.currentTask.status === "running") {
+            await hydratedState.currentTask.actions.runTask(runError => {
+              console.error(runError);
+            });
+          }
+        }
+      }
     }
   )
 );
